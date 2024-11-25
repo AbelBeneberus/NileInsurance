@@ -1,0 +1,12 @@
+﻿services:
+  election:
+    image: election
+    build:
+      context: .
+      dockerfile: Election/Election/Dockerfile
+
+  election.client:
+    image: election.client
+    build:
+      context: .
+      dockerfile: Election/Election.Client/Dockerfile

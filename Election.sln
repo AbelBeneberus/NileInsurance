@@ -1,0 +1,27 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Election", "Election\Election\Election.csproj", "{6C696D17-C0BB-48F4-BF04-3A381BC1AABE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Election.Client", "Election\Election.Client\Election.Client.csproj", "{2B2B826A-7F78-4638-A477-9CF71969714A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A7777636-E37B-4F85-9C60-0812F1B0A5FC}"
+	ProjectSection(SolutionItems) = preProject
+		compose.yaml = compose.yaml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6C696D17-C0BB-48F4-BF04-3A381BC1AABE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C696D17-C0BB-48F4-BF04-3A381BC1AABE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C696D17-C0BB-48F4-BF04-3A381BC1AABE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C696D17-C0BB-48F4-BF04-3A381BC1AABE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B2B826A-7F78-4638-A477-9CF71969714A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B2B826A-7F78-4638-A477-9CF71969714A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B2B826A-7F78-4638-A477-9CF71969714A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B2B826A-7F78-4638-A477-9CF71969714A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

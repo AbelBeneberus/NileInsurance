@@ -1,0 +1,186 @@
+﻿@page "/electors"
+@using System.ComponentModel.DataAnnotations
+@using Election.Data
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext DbContext
+
+<PageTitle>Electors</PageTitle>
+
+<h3 class="text-center">Nominees</h3>
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title">Add Elector</h4>
+        <EditForm Model="@Input" OnValidSubmit="HandleValidSubmit" FormName="NomineeForm">
+            <DataAnnotationsValidator/>
+            <ValidationSummary class="text-danger"/>
+
+            <div class="form-group row">
+                <label for="firstName" class="col-sm-2 col-form-label">First Name</label>
+                <div class="col-sm-4">
+                    <InputText id="firstName" class="form-control mb-2" @bind-Value="Input.FirstName"/>
+                    <ValidationMessage For="() => Input.FirstName" class="text-danger"/>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="lastName" class="col-sm-2 col-form-label">Last Name</label>
+                <div class="col-sm-4">
+                    <InputText id="lastName" class="form-control mb-2" @bind-Value="Input.LastName"/>
+                    <ValidationMessage For="() => Input.LastName" class="text-danger"/>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="phoneNumber" class="col-sm-2 col-form-label">Phone Number</label>
+                <div class="col-sm-4">
+                    <InputText id="phoneNumber" class="form-control mb-2" @bind-Value="Input.PhoneNumber"/>
+                    <ValidationMessage For="() => Input.PhoneNumber" class="text-danger"/>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="emailAddress" class="col-sm-2 col-form-label">Email Address</label>
+                <div class="col-sm-4">
+                    <InputText id="emailAddress" class="form-control mb-2" @bind-Value="Input.EmailAddress"/>
+                    <ValidationMessage For="() => Input.EmailAddress" class="text-danger"/>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Submit</button>
+        </EditForm>
+    </div>
+</div>
+
+<hr/>
+
+<h3 class="text-center">Elector List</h3>
+
+@if (nominees == null)
+{
+    <p class="text-center"><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+        <tr>
+
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Phone Number</th>
+            <th>Email Address</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var n in nominees)
+        {
+            <tr>
+                @* <td> *@
+                @*     <img src="data:image/jpeg;base64,@Convert.ToBase64String(n.Image)" alt="Nominee Image" class="img-thumbnail" style="width: 100px; height: 100px;" /> *@
+                @* </td> *@
+                <td>@n.FirstName</td>
+                <td>@n.LastName</td>
+                <td>@n.PhoneNumber</td>
+                <td>@n.EmailAddress</td>
+                <td>
+                    <button class="btn btn-danger" @onclick="() => DeleteElector(n)">Delete</button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    [SupplyParameterFromForm] private InputModel Input { get; set; } = new InputModel();
+    private List<Nominee> nominees;
+    private string errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            nominees = DbContext.Nominees.ToList();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading nominees: {ex.Message}";
+        }
+    }
+
+    public async Task UploadedExcel(InputFileChangeEventArgs e)
+    {
+        Console.WriteLine("Hello");
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            var nominee = new Elector()
+            {
+                FirstName = Input.FirstName,
+                LastName = Input.LastName,
+                PhoneNumber = Input.PhoneNumber,
+                EmailAddress = Input.EmailAddress
+            };
+
+            DbContext.Electors.Add(nominee);
+            await DbContext.SaveChangesAsync();
+            nominees = await DbContext.Nominees.ToListAsync();
+            Input = new InputModel(); // Reset the form
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error adding nominee: {ex.Message}";
+        }
+    }
+
+    private async Task DeleteElector(Nominee nominee)
+    {
+        try
+        {
+            DbContext.Nominees.Remove(nominee);
+            await DbContext.SaveChangesAsync();
+            nominees = await DbContext.Nominees.ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting nominee: {ex.Message}";
+        }
+    }
+    // public async Task LoadImage(InputFileChangeEventArgs e)
+    // {
+    //     try
+    //     {
+    //         var file = e.File;
+    //         var buffer = new byte[file.Size];
+    //         await file.OpenReadStream().ReadAsync(buffer);
+    //         Input.Image = buffer;
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         errorMessage = $"Error loading image: {ex.Message}";
+    //     }
+    // }
+
+    public class InputModel
+    {
+        [Required]
+        [Display(Name = "First Name")]
+        public string FirstName { get; set; } = string.Empty;
+
+        [Required]
+        [Display(Name = "Last Name")]
+        public string LastName { get; set; } = string.Empty;
+
+        [Required]
+        [Display(Name = "Phone Number")]
+        public string PhoneNumber { get; set; } = string.Empty;
+
+        [Required]
+        [Display(Name = "Email Address")]
+        public string EmailAddress { get; set; } = string.Empty;
+    }
+
+   
+
+}
