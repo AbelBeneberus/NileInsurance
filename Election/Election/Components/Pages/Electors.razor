@@ -3,8 +3,6 @@
 @using Election.Data
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Identity
-@using System.Security.Cryptography
-@using System.Text
 @inject UserManager<ApplicationUser> UserManager
 @inject IUserStore<ApplicationUser> UserStore
 @inject SignInManager<ApplicationUser> SignInManager
@@ -131,10 +129,18 @@ else
                 return;
             }
 
-            // Email the user their password (Optional)
-            var emailContent = $"Welcome to the Election App.\n\nYour login credentials are:\nEmail: {Input.EmailAddress}\nPassword: {randomPassword}\n\nPlease change your password after logging in.";
-            //  await EmailSender.SendEmailAsync(Input.EmailAddress, "Your Account Has Been Created", emailContent);
+            // Automatically confirm the user's email
+            var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+            var confirmResult = await UserManager.ConfirmEmailAsync(user, code);
+            if (!confirmResult.Succeeded)
+            {
+                errorMessage = $"Error confirming email: {string.Join(", ", confirmResult.Errors.Select(e => e.Description))}";
+                return;
+            }
 
+            // Optional: Email the user their password
+            var emailContent = $"Welcome to the Election App.\n\nYour login credentials are:\nEmail: {Input.EmailAddress}\nPassword: {randomPassword}\n\nPlease change your password after logging in.";
+         //   await EmailSender.SendConfirmationLinkAsync(Input.EmailAddress, "Your Account Has Been Created", emailContent);
             // Create Elector
             var elector = new Elector
             {
@@ -173,17 +179,29 @@ else
     private string GenerateRandomPassword()
     {
         const int length = 12;
-        const string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+";
-        using var rng = RandomNumberGenerator.Create();
-        var bytes = new byte[length];
-        rng.GetBytes(bytes);
-        var result = new StringBuilder(length);
-        foreach (var byteValue in bytes)
+        const string upperChars = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
+        const string lowerChars = "abcdefghijklmnopqrstuvwxyz";
+        const string digitChars = "0123456789";
+        const string specialChars = "!@#$%^&*()_+";
+        const string allChars = upperChars + lowerChars + digitChars + specialChars;
+
+        var random = new Random();
+        var passwordChars = new List<char>
         {
-            result.Append(validChars[byteValue % validChars.Length]);
+            upperChars[random.Next(upperChars.Length)],
+            lowerChars[random.Next(lowerChars.Length)],
+            digitChars[random.Next(digitChars.Length)],
+            specialChars[random.Next(specialChars.Length)]
+        };
+
+        for (var i = passwordChars.Count; i < length; i++)
+        {
+            passwordChars.Add(allChars[random.Next(allChars.Length)]);
         }
 
-        return result.ToString();
+        // Shuffle the characters to avoid pattern
+        passwordChars = passwordChars.OrderBy(x => random.Next()).ToList();
+        return new string(passwordChars.ToArray());
     }
 
     public class InputModel
@@ -197,10 +215,12 @@ else
         public string LastName { get; set; } = string.Empty;
 
         [Required]
+        [Phone]
         [Display(Name = "Phone Number")]
         public string PhoneNumber { get; set; } = string.Empty;
 
         [Required]
+        [EmailAddress]
         [Display(Name = "Email Address")]
         public string EmailAddress { get; set; } = string.Empty;
     }
