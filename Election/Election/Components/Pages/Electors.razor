@@ -2,11 +2,18 @@
 @using System.ComponentModel.DataAnnotations
 @using Election.Data
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Cryptography
+@using System.Text
+@inject UserManager<ApplicationUser> UserManager
+@inject IUserStore<ApplicationUser> UserStore
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IEmailSender<ApplicationUser> EmailSender
 @inject ApplicationDbContext DbContext
 
 <PageTitle>Electors</PageTitle>
 
-<h3 class="text-center">Nominees</h3>
+<h3 class="text-center">Electors</h3>
 <div class="card">
     <div class="card-body">
         <h4 class="card-title">Add Elector</h4>
@@ -52,7 +59,7 @@
 
 <h3 class="text-center">Elector List</h3>
 
-@if (nominees == null)
+@if (electors == null)
 {
     <p class="text-center"><em>Loading...</em></p>
 }
@@ -61,25 +68,23 @@ else
     <table class="table table-striped">
         <thead>
         <tr>
-
             <th>First Name</th>
             <th>Last Name</th>
             <th>Phone Number</th>
             <th>Email Address</th>
+            <th>Password</th>
             <th>Actions</th>
         </tr>
         </thead>
         <tbody>
-        @foreach (var n in nominees)
+        @foreach (var n in electors)
         {
             <tr>
-                @* <td> *@
-                @*     <img src="data:image/jpeg;base64,@Convert.ToBase64String(n.Image)" alt="Nominee Image" class="img-thumbnail" style="width: 100px; height: 100px;" /> *@
-                @* </td> *@
                 <td>@n.FirstName</td>
                 <td>@n.LastName</td>
                 <td>@n.PhoneNumber</td>
                 <td>@n.EmailAddress</td>
+                <td>@n.Password</td>
                 <td>
                     <button class="btn btn-danger" @onclick="() => DeleteElector(n)">Delete</button>
                 </td>
@@ -91,41 +96,58 @@ else
 
 @code {
     [SupplyParameterFromForm] private InputModel Input { get; set; } = new InputModel();
-    private List<Nominee> nominees;
+    private List<Elector> electors;
     private string errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            nominees = DbContext.Nominees.ToList();
+            electors = await DbContext.Electors.ToListAsync();
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading nominees: {ex.Message}";
+            errorMessage = $"Error loading electors: {ex.Message}";
         }
-    }
-
-    public async Task UploadedExcel(InputFileChangeEventArgs e)
-    {
-        Console.WriteLine("Hello");
     }
 
     private async Task HandleValidSubmit()
     {
         try
         {
-            var nominee = new Elector()
+            // Generate random password
+            var randomPassword = GenerateRandomPassword();
+
+            // Create ApplicationUser
+            var user = new ApplicationUser
+            {
+                UserName = Input.EmailAddress,
+                Email = Input.EmailAddress
+            };
+            var result = await UserManager.CreateAsync(user, randomPassword);
+            if (!result.Succeeded)
+            {
+                errorMessage = $"Error creating user: {string.Join(", ", result.Errors.Select(e => e.Description))}";
+                return;
+            }
+
+            // Email the user their password (Optional)
+            var emailContent = $"Welcome to the Election App.\n\nYour login credentials are:\nEmail: {Input.EmailAddress}\nPassword: {randomPassword}\n\nPlease change your password after logging in.";
+            //  await EmailSender.SendEmailAsync(Input.EmailAddress, "Your Account Has Been Created", emailContent);
+
+            // Create Elector
+            var elector = new Elector
             {
                 FirstName = Input.FirstName,
                 LastName = Input.LastName,
                 PhoneNumber = Input.PhoneNumber,
-                EmailAddress = Input.EmailAddress
+                EmailAddress = Input.EmailAddress,
+                Password = randomPassword
             };
-
-            DbContext.Electors.Add(nominee);
+            DbContext.Electors.Add(elector);
             await DbContext.SaveChangesAsync();
-            nominees = await DbContext.Nominees.ToListAsync();
+
+            electors = await DbContext.Electors.ToListAsync();
             Input = new InputModel(); // Reset the form
         }
         catch (Exception ex)
@@ -134,33 +156,35 @@ else
         }
     }
 
-    private async Task DeleteElector(Nominee nominee)
+    private async Task DeleteElector(Elector nominee)
     {
         try
         {
-            DbContext.Nominees.Remove(nominee);
+            DbContext.Electors.Remove(nominee);
             await DbContext.SaveChangesAsync();
-            nominees = await DbContext.Nominees.ToListAsync();
+            electors = await DbContext.Electors.ToListAsync();
         }
         catch (Exception ex)
         {
             errorMessage = $"Error deleting nominee: {ex.Message}";
         }
     }
-    // public async Task LoadImage(InputFileChangeEventArgs e)
-    // {
-    //     try
-    //     {
-    //         var file = e.File;
-    //         var buffer = new byte[file.Size];
-    //         await file.OpenReadStream().ReadAsync(buffer);
-    //         Input.Image = buffer;
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         errorMessage = $"Error loading image: {ex.Message}";
-    //     }
-    // }
+
+    private string GenerateRandomPassword()
+    {
+        const int length = 12;
+        const string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+";
+        using var rng = RandomNumberGenerator.Create();
+        var bytes = new byte[length];
+        rng.GetBytes(bytes);
+        var result = new StringBuilder(length);
+        foreach (var byteValue in bytes)
+        {
+            result.Append(validChars[byteValue % validChars.Length]);
+        }
+
+        return result.ToString();
+    }
 
     public class InputModel
     {
@@ -180,7 +204,5 @@ else
         [Display(Name = "Email Address")]
         public string EmailAddress { get; set; } = string.Empty;
     }
-
-   
 
 }

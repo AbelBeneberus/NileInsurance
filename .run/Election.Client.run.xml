@@ -1,0 +1,22 @@
+﻿<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Election.Client" type="DotNetProject" factoryName=".NET Project" editBeforeRun="true" singleton="false">
+    <option name="EXE_PATH" value="$USER_HOME$/.nuget/packages/microsoft.net.sdk.webassembly.pack/9.0.0/WasmAppHost/WasmAppHost.dll" />
+    <option name="PROGRAM_PARAMETERS" value="--use-staticwebassets --runtime-config C:\works\Nile\NileInsurance\Election\Election.Client\bin\Debug\net9.0\Election.Client.runtimeconfig.json" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Election/Election.Client/bin/Debug/net9.0" />
+    <option name="PASS_PARENT_ENVS" value="1" />
+    <option name="USE_EXTERNAL_CONSOLE" value="0" />
+    <option name="USE_MONO" value="0" />
+    <option name="RUNTIME_ARGUMENTS" value="" />
+    <option name="RUNTIME_TYPE" value="coreclr" />
+    <option name="PROJECT_PATH" value="$PROJECT_DIR$/Election/Election.Client/Election.Client.csproj" />
+    <option name="PROJECT_EXE_PATH_TRACKING" value="1" />
+    <option name="PROJECT_ARGUMENTS_TRACKING" value="1" />
+    <option name="PROJECT_WORKING_DIRECTORY_TRACKING" value="1" />
+    <option name="PROJECT_KIND" value="DotNetCore" />
+    <option name="PROJECT_TFM" value="net9.0" />
+    <browser name="98ca6316-2f89-46d9-a9e5-fa9e2b0625b3" start="true" with-js-debugger="true" />
+    <method v="2">
+      <option name="Build" />
+    </method>
+  </configuration>
+</component>

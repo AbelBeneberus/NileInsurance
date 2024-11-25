@@ -21,7 +21,6 @@ else
         {
             <div class="col-sm-4 mb-4">
                 <div class="card @GetCardClass(nominee.Id)" @onclick="() => SelectNominee(nominee)">
-                    @* <img src="data:image/jpeg;base64,@Convert.ToBase64String(nominee.Image)" class="card-img-top" alt="@nominee.FirstName @nominee.LastName"> *@
                     <div class="card-body">
                         <h5 class="card-title">@nominee.FirstName @nominee.LastName</h5>
                         <p class="card-text">Phone: @nominee.PhoneNumber</p>
@@ -49,6 +48,7 @@ else
     private void SelectNominee(Nominee nominee)
     {
         selectedNominee = nominee;
+        StateHasChanged(); // Notify the UI to re-render based on selection
     }
 
     private async Task SubmitVote()
@@ -70,5 +70,4 @@ else
     {
         return nomineeId == selectedNominee?.Id ? "border-primary shadow selected" : "shadow";
     }
-
 }

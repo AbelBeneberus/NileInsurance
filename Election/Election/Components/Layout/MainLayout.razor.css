@@ -96,3 +96,7 @@ main {
         right: 0.75rem;
         top: 0.5rem;
     }
+.selected {
+    border: 2px solid blue;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
